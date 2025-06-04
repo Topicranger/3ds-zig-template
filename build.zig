@@ -1,6 +1,11 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
+const Env = struct {
+    ip_3ds: []const u8,
+};
+const env: Env = @import("env.zig.zon");
+
 // 3DS values
 const appFilename = "apptemplate";
 const appTitle = "App template";
@@ -110,4 +115,11 @@ pub fn build(b: *std.Build) void {
     emulate.addFileArg(out_dsx);
     const run_step = b.step("run", "Run in Azahar");
     run_step.dependOn(&emulate.step);
+
+    // Run on device.
+    const dslink = b.findProgram(&.{"3dslink"}, &.{devkitProToolsDir}) catch "3dslink";
+    const upload = b.addSystemCommand(&.{ dslink, "-a", env.ip_3ds });
+    upload.addFileArg(out_dsx);
+    const upload_step = b.step("launch", "Run in The Homebrew Launcher via 3dslink NetLoader");
+    upload_step.dependOn(&upload.step);
 }
