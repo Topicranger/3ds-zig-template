@@ -7,10 +7,8 @@ const appTitle = "App template";
 const appDescription = "Built with Zig, devkitARM, and libctru";
 const appAuthor = "YourName";
 
-const emulator = "azahar";
-
 // devkitPro paths
-const devkitPro =  "/opt/devkitpro"; //or the path to your installation, e.g. "c:/devkitPro"
+const devkitPro = "/opt/devkitpro"; //or the path to your installation, e.g. "c:/devkitPro"
 const devkitProToolsDir = devkitPro ++ "/tools/bin";
 const devkitARMCompilerDir = devkitPro ++ "/devkitARM/bin";
 const devkitARMIncludeDir = devkitPro ++ "/devkitARM/arm-none-eabi/include";
@@ -38,14 +36,14 @@ pub fn build(b: *std.Build) void {
         .cpu_arch = .arm,
         .os_tag = .freestanding,
         .abi = .eabihf,
-        .cpu_model = .{ .explicit = &std.Target.arm.cpu.mpcore }
+        .cpu_model = .{ .explicit = &std.Target.arm.cpu.mpcore },
     };
 
     const obj = b.addObject(.{
         .name = appFilename,
         .target = b.resolveTargetQuery(target),
         .optimize = optimize,
-        .root_source_file = b.path("src/main.zig") //TODO: refactor to modules
+        .root_source_file = b.path("src/main.zig"), //TODO: refactor to modules
     });
     obj.linkLibC();
     obj.addIncludePath(.{ .src_path = .{ .owner = b, .sub_path = devkitPro ++ "/portlibs/3ds/include" } });
@@ -64,13 +62,13 @@ pub fn build(b: *std.Build) void {
         "-march=armv6k",
         "-mtune=mpcore",
         "-mfloat-abi=hard",
-        "-mtp=soft"
+        "-mtp=soft",
     });
     _ = elf.addPrefixedOutputFileArg("-Wl,-Map,", appFilename ++ ".map");
     elf.addArtifactArg(obj);
     elf.addArgs(&.{
         "-L" ++ ctruLibDir,
-        "-lctru"
+        "-lctru",
     });
     const out_elf = elf.addPrefixedOutputFileArg("-o", appFilename ++ ".elf");
 
@@ -83,7 +81,7 @@ pub fn build(b: *std.Build) void {
         appTitle,
         appDescription,
         appAuthor,
-        icon
+        icon,
     });
     const out_smdh = smdh.addOutputFileArg(appFilename ++ ".smdh");
 
@@ -98,10 +96,18 @@ pub fn build(b: *std.Build) void {
     const ds_step = b.step("3ds", "Build 3DS executable");
     ds_step.dependOn(&install_3dsx.step);
 
-    // step 6
-    // curiously, this step gets executed before the compilation is over. Hmmm...
-    const run_step = b.step("run", "Run in " ++ emulator);
-    const emu_arg = b.addSystemCommand(&.{ emulator, "zig-out/" ++ appFilename ++ ".3dsx"});
-    run_step.dependOn(ds_step);
-    run_step.dependOn(&emu_arg.step);
+    // Run in emulator
+    const azahar = b.findProgram(&.{"azahar"}, &.{}) catch "";
+    const emulate = if (azahar.len > 0) cmd: {
+        break :cmd b.addSystemCommand(&.{azahar});
+    } else cmd: {
+        const flatpak = b.findProgram(&.{"flatpak"}, &.{}) catch "";
+        if (flatpak.len == 0) {
+            return;
+        }
+        break :cmd b.addSystemCommand(&.{ flatpak, "run", "org.azahar_emu.Azahar" });
+    };
+    emulate.addFileArg(out_dsx);
+    const run_step = b.step("run", "Run in Azahar");
+    run_step.dependOn(&emulate.step);
 }
