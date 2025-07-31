@@ -2,6 +2,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 
 const Env = struct {
+    dkp_path: []const u8,
     ip_3ds: []const u8,
 };
 const env: Env = @import("env.zig.zon");
@@ -13,7 +14,7 @@ const app_description = "Built with Zig, devkitARM, and libctru";
 const app_author = "YourName";
 
 // devkitPro paths
-const devkitpro = "/opt/devkitpro"; //or the path to your installation, e.g. "c:/devkitPro"
+const devkitpro = env.dkp_path;
 const devkitpro_tools_dir = devkitpro ++ "/tools/bin";
 const devkitarm_compiler_dir = devkitpro ++ "/devkitARM/bin";
 const devkitarm_include_dir = devkitpro ++ "/devkitARM/arm-none-eabi/include";
