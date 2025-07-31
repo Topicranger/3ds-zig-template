@@ -1,3 +1,4 @@
 # Ignore zig folders
 .zig-cache/
 zig-out/
+env.zig.zon
