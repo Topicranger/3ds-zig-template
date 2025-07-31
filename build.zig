@@ -116,7 +116,7 @@ pub fn build(b: *std.Build) void {
     const run_step = b.step("run", "Run in Azahar");
     run_step.dependOn(&emulate.step);
 
-    // Run on device.
+    // Run on device
     const dslink = b.findProgram(&.{"3dslink"}, &.{devkitProToolsDir}) catch "3dslink";
     const upload = b.addSystemCommand(&.{ dslink, "-a", env.ip_3ds });
     upload.addFileArg(out_dsx);
