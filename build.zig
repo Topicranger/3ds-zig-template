@@ -29,6 +29,7 @@ pub fn build(b: *std.Build) void {
 
     // check if all required tools are available before providing an option to
     // build for the 3DS
+    // note: this errors silently and just hides the build steps
     const dkp_3dsx = b.findProgram(&.{"3dsxtool" ++ extension}, &.{devkitpro_tools_dir}) catch "";
     const dkp_smdh = b.findProgram(&.{"smdhtool" ++ extension}, &.{devkitpro_tools_dir}) catch "";
     const dkp_gcc = b.findProgram(&.{"arm-none-eabi-gcc" ++ extension}, &.{devkitarm_compiler_dir}) catch "";
@@ -45,11 +46,12 @@ pub fn build(b: *std.Build) void {
         .cpu_model = .{ .explicit = &std.Target.arm.cpu.mpcore },
     };
 
+    //TODO: refactor to modules for zig >= 0.15 support
     const obj = b.addObject(.{
         .name = app_filename,
         .target = b.resolveTargetQuery(target),
         .optimize = optimize,
-        .root_source_file = b.path("src/main.zig"), //TODO: refactor to modules
+        .root_source_file = b.path("src/main.zig"),
     });
     obj.linkLibC();
     obj.addIncludePath(.{ .src_path = .{ .owner = b, .sub_path = devkitpro ++ "/portlibs/3ds/include" } });

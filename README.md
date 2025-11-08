@@ -1,11 +1,13 @@
 This is a very basic template to kickstart _your_ zig adventures on 3DS 🦎
 
-Here be dragons - zig is still in development and things might have changed
-already!<br> It actually just exists because others were outdated.
+> [!WARNING]
+> This template is outdated and doesn't build in newer versions of zig.
+> <br>It actually just exists because others were even older at the time.
+> <br>A keen eye should be able to fix the problem; PRs welcome!
 
 ## Dependencies
 
-- zig >= `0.14.0`
+- zig = `0.14.1`
 - devkitPro for 3ds development
 
 ## Usage
